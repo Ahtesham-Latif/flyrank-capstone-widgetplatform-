@@ -1,0 +1,33 @@
+{
+  "name": "flyrank-capstone",
+  "version": "1.0.0",
+  "description": "Multi-tenant embeddable widget and lead capture platform for securely integrating customizable widgets into websites.",
+  "keywords": [
+    "Backend",
+    "Capstone",
+    "Flyrank"
+  ],
+  "homepage": "https://github.com/Ahtesham-Latif/flyrank-capstone-widgetplatform-#readme",
+  "bugs": {
+    "url": "https://github.com/Ahtesham-Latif/flyrank-capstone-widgetplatform-/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ahtesham-Latif/flyrank-capstone-widgetplatform-.git"
+  },
+  "license": "ISC",
+  "author": "Ahtesham Latif",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"node server.js",
+    "migrate": "knex migrate:latest"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "knex": "^3.3.0",
+    "pg": "^8.23.0",
+    "sqlite3": "^6.0.1"
+  }
+}
