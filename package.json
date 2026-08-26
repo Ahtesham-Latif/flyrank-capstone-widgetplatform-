@@ -22,7 +22,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start":"node server.js",
-    "migrate": "knex migrate:latest"
+    "migrate": "knex migrate:latest",
+    "dev":"node server.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

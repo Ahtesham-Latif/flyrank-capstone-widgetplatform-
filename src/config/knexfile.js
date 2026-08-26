@@ -13,7 +13,7 @@ export default {
   development: {
     client: isPostgres ? 'pg' : 'sqlite3',
     connection: process.env.DATABASE_URL || {
-      filename: path.join(__dirname, './src/database/app.db')
+      filename: path.resolve(__dirname, '../../src/database/app.db')
     },
     useNullAsDefault: true,
     migrations: {
