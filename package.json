@@ -21,12 +21,14 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"node server.js",
+    "start": "node server.js",
     "migrate": "knex migrate:latest",
-    "dev":"node server.js"
+    "dev": "node server.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
+    "express-session": "^1.19.0",
     "knex": "^3.3.0",
     "pg": "^8.23.0",
     "sqlite3": "^6.0.1"

@@ -16,9 +16,9 @@ export default {
       filename: path.resolve(__dirname, '../../src/database/app.db')
     },
     useNullAsDefault: true,
-    migrations: {
-      directory: './src/migrations'
-    }
+    migrations: {                                                                             
+          directory: path.resolve(__dirname, '../../src/migrations')                              
+    } 
   }
 };
 
