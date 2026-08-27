@@ -6,7 +6,7 @@ class AuthController {
     try {
       const { email, password } = req.body;
 
-      if (!email || !password || password.length < 6) {
+      if (!email || !password || password.length < 8) {
         return res.status(400).json({ error: 'Email and password (min 6 chars) are required' });
       }
 
@@ -15,10 +15,10 @@ class AuthController {
         return res.status(400).json({ error: 'Email already registered' });
       }
 
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await bcrypt.hash(password, 10); // Hash the password with a salt round of 10
       const newUser = await userRepository.create(email, passwordHash);
 
-      req.session.userId = newUser.id;
+      req.session.userId = newUser.id; 
 
       return res.status(201).json({
         message: 'User registered successfully',

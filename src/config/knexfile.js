@@ -16,6 +16,18 @@ export default {
       filename: path.resolve(__dirname, '../../src/database/app.db')
     },
     useNullAsDefault: true,
+    pool: {
+      afterCreate: (conn, cb) => {
+        if (!isPostgres) {
+          // Enable foreign keys and WAL mode for better concurrency in SQLite
+          conn.run('PRAGMA foreign_keys = ON;', () => {
+            conn.run('PRAGMA journal_mode = WAL;', cb);
+          });
+        } else {
+          cb();
+        }
+      }
+    },
     migrations: {                                                                             
           directory: path.resolve(__dirname, '../../src/migrations')                              
     } 
