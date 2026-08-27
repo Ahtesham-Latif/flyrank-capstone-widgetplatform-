@@ -3,6 +3,7 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes.js';
 import widgetRoutes from './routes/widget.routes.js';
+import deliveryRoutes from './routes/delivery.routes.js';
 import db from './config/db.js';
 
 dotenv.config();
@@ -38,5 +39,8 @@ app.get('/health', async (req, res) => {
 // Use the routes
 app.use('/api/auth', authRoutes);
 app.use('/api/widgets', widgetRoutes);
+
+// Publicly readable delivery routes (No requireAuth middleware)
+app.use('/', deliveryRoutes);
 
 export default app;
