@@ -1,0 +1,71 @@
+import crypto from 'crypto';
+import widgetRepository from '../repositories/widget.repository.js';
+
+class WidgetController {
+  async createWidget(req, res) {
+    try {
+      const { title, allowed_origins } = req.body;
+      const userId = req.session.userId;
+
+      if (!title || !allowed_origins || !Array.isArray(allowed_origins)) {
+        return res.status(400).json({
+          error: 'Title and allowed_origins (array of URLs) are required'
+        });
+      }
+
+      // Generate unique public API key (e.g. key_a1b2c3d4...)
+      const publicApiKey = `key_${crypto.randomBytes(12).toString('hex')}`;
+
+      const widget = await widgetRepository.create({
+        user_id: userId,
+        public_api_key: publicApiKey,
+        title,
+        allowed_origins: JSON.stringify(allowed_origins)
+      });
+
+      return res.status(201).json({
+        message: 'Widget created successfully',
+        widget: {
+          ...widget,
+          allowed_origins: JSON.parse(widget.allowed_origins || '[]')
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  async getMyWidgets(req, res) {
+    try {
+      const userId = req.session.userId;
+      const widgets = await widgetRepository.findByUserId(userId);
+
+      const formattedWidgets = widgets.map((w) => ({
+        ...w,
+        allowed_origins: JSON.parse(w.allowed_origins || '[]')
+      }));
+
+      return res.status(200).json({ widgets: formattedWidgets });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  async deleteWidget(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.session.userId;
+
+      const deleted = await widgetRepository.delete(id, userId);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Widget not found or unauthorized' });
+      }
+
+      return res.status(200).json({ message: 'Widget deleted successfully' });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+}
+
+export default new WidgetController();
