@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import widgetRepository from '../repositories/widget.repository.js';
 import submissionRepository from '../repositories/submission.repository.js';
+import userRepository from '../repositories/user.repository.js';
+import geoIPService from '../services/geoip.service.js';
+import webhookService from '../services/webhook.service.js';
 
 // Schema for raw payload validation
 const submissionSchema = z.object({
@@ -21,7 +24,10 @@ class SubmissionController {
         return res.status(404).json({ error: 'Widget key not found or inactive' });
       }
 
-      // 2. Security Check: Strict Origin Validation
+      // 2. Fetch the Owner to get their email address for Webhooks
+      const owner = await userRepository.findById(widget.user_id);
+
+      // 3. Security Check: Strict Origin Validation
       const requestOrigin = req.headers.origin || req.headers.referer;
       const allowedOrigins = JSON.parse(widget.allowed_origins || '[]');
 
@@ -42,13 +48,13 @@ class SubmissionController {
         }
       }
 
-      // 3. Security Check: Honeypot Trap
+      // 4. Security Check: Honeypot Trap
       // If a bot populated the hidden honeypot field, fake success but discard data
       if (req.body.website_hp_check && req.body.website_hp_check.trim() !== '') {
         return res.status(201).json({ message: 'Submission received successfully' });
       }
 
-      // 4. Payload Validation via Zod
+      // 5. Payload Validation via Zod
       const parseResult = submissionSchema.safeParse(req.body);
       if (!parseResult.success) {
         return res.status(400).json({
@@ -60,14 +66,36 @@ class SubmissionController {
       // Clean payload (Remove honeypot string from saved payload)
       const { website_hp_check, ...cleanData } = parseResult.data;
 
-      // 5. Save Lead to Database
+      // 6. Resolve Geo Location and Save Lead to Database
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      const cleanIp = typeof clientIp === 'string' ? clientIp.split(',')[0].trim() : clientIp;
+
+      // Fetch location details
+      const geoData = await geoIPService.lookup(cleanIp);
 
       const submission = await submissionRepository.create({
         widget_id: widget.id,
         data: cleanData,
-        ip_address: typeof clientIp === 'string' ? clientIp.split(',')[0].trim() : clientIp
+        ip_address: cleanIp,
+        geo_data: geoData
       });
+
+      // 7. Optional: Trigger n8n Webhook / Email Notification
+      let n8nWebhookUrl = widget.webhook_url;
+      if (!n8nWebhookUrl && process.env.N8N_HOST && process.env.N8N_PORT && process.env.N8N_WEBHOOK_PATH) {
+        n8nWebhookUrl = `http://${process.env.N8N_HOST}:${process.env.N8N_PORT}${process.env.N8N_WEBHOOK_PATH}`;
+      }
+      if (n8nWebhookUrl) {
+        // Fire and forget webhook request (no await)
+        webhookService.notify(n8nWebhookUrl, {
+          submission_id: submission.id,
+          widget_title: widget.title,
+          owner_email: owner ? owner.email : null,
+          lead: cleanData,
+          ip_address: cleanIp,
+          geo_data: geoData
+        });
+      }
 
       return res.status(201).json({
         message: 'Submission received successfully',
