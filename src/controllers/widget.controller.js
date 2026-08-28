@@ -66,6 +66,46 @@ class WidgetController {
       return res.status(500).json({ error: err.message });
     }
   }
+
+  async updateWidget(req, res) {
+    try {
+      const { id } = req.params;
+      const { title, allowed_origins, webhook_url } = req.body;
+      const userId = req.session.userId;
+
+      const updateData = {};
+      if (title) updateData.title = title;
+      if (allowed_origins !== undefined) {
+        if (!Array.isArray(allowed_origins)) {
+          return res.status(400).json({ error: 'allowed_origins must be an array of URLs' });
+        }
+        updateData.allowed_origins = JSON.stringify(allowed_origins);
+      }
+      if (webhook_url !== undefined) {
+        updateData.webhook_url = webhook_url;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ error: 'No data provided to update' });
+      }
+
+      const widget = await widgetRepository.update(id, userId, updateData);
+      
+      if (!widget) {
+        return res.status(404).json({ error: 'Widget not found or unauthorized' });
+      }
+
+      return res.status(200).json({
+        message: 'Widget updated successfully',
+        widget: {
+          ...widget,
+          allowed_origins: JSON.parse(widget.allowed_origins || '[]')
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
 }
 
 export default new WidgetController();

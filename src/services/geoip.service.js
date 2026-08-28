@@ -28,8 +28,28 @@ class GeoIPService {
       console.error('[GeoIP Service] Primary lookup failed:', err.message);
     }
 
-    // Fallback if primary fails
-    return { country: 'Unknown', city: 'Unknown' };
+    // Fallback if primary fails: ipapi.co
+    try {
+      const fallbackRes = await fetch(`https://ipapi.co/${ip}/json/`, {
+        timeout: 3000,
+        headers: { 'User-Agent': 'nodejs-ipapi-v1' }
+      });
+      if (fallbackRes.ok) {
+        const fallbackData = await fallbackRes.json();
+        if (!fallbackData.error) {
+          return {
+            country: fallbackData.country_name || 'Unknown',
+            city: fallbackData.city || 'Unknown',
+            region: fallbackData.region || 'Unknown',
+            isp: fallbackData.org || 'Unknown'
+          };
+        }
+      }
+    } catch (err) {
+      console.error('[GeoIP] Fallback service (ipapi.co) failed:', err.message);
+    }
+
+    return { country: 'Unknown', city: 'Unknown', region: 'Unknown', isp: 'Unknown' };
   }
 }
 

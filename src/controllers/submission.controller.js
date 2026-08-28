@@ -29,17 +29,29 @@ class SubmissionController {
 
       // 3. Security Check: Strict Origin Validation
       const requestOrigin = req.headers.origin || req.headers.referer;
-      const allowedOrigins = JSON.parse(widget.allowed_origins || '[]');
+      let allowedOrigins = [];
+      try {
+        allowedOrigins = JSON.parse(widget.allowed_origins || '[]');
+      } catch (e) {
+        allowedOrigins = [];
+      }
 
-      // If allowed_origins is specified, enforce strictly
-      if (allowedOrigins.length > 0 && requestOrigin) {
+      const isWildcard = allowedOrigins.includes('*') || allowedOrigins.length === 0;
+
+      // If specific origins are configured, strictly enforce them
+      if (!isWildcard) {
+        // If they specify origins, we MUST have an origin/referer to check against
+        if (!requestOrigin) {
+          return res.status(403).json({ error: 'Forbidden: Missing Origin/Referer header' });
+        }
+
         const isAllowed = allowedOrigins.some((allowed) => {
           try {
             const allowedHost = new URL(allowed).origin;
             const requestHost = new URL(requestOrigin).origin;
             return allowedHost === requestHost;
           } catch {
-            return false;
+            return allowed === requestOrigin;
           }
         });
 
@@ -88,12 +100,18 @@ class SubmissionController {
       if (n8nWebhookUrl) {
         // Fire and forget webhook request (no await)
         webhookService.notify(n8nWebhookUrl, {
+          // Existing fields for backward compatibility
           submission_id: submission.id,
           widget_title: widget.title,
           owner_email: owner ? owner.email : null,
           lead: cleanData,
           ip_address: cleanIp,
-          geo_data: geoData
+          geo_data: geoData,
+          // New added fields
+          id: submission.id,
+          widget_id: widget.id,
+          data: cleanData,
+          created_at: submission.created_at || new Date().toISOString().replace('T', ' ').substring(0, 19)
         });
       }
 

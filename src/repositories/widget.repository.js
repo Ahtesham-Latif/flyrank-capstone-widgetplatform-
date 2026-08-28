@@ -24,6 +24,15 @@ class WidgetRepository {
       .del();
   }
 
+  async update(id, userId, updateData) {
+    const updated = await db('widgets')
+      .where({ id, user_id: userId })
+      .update(updateData);
+    
+    if (!updated) return null;
+    return await this.findByIdAndUserId(id, userId);
+  }
+
   // Public lookup for script & submission delivery (unauthenticated)
   async findByApiKey(publicApiKey) {
     return await db('widgets').where({ public_api_key: publicApiKey }).first();

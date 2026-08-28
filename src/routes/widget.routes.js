@@ -10,5 +10,6 @@ router.use(requireAuth);
 router.post('/', widgetController.createWidget);
 router.get('/', widgetController.getMyWidgets);
 router.delete('/:id', widgetController.deleteWidget);
+router.patch('/:id', widgetController.updateWidget);
 
 export default router;
