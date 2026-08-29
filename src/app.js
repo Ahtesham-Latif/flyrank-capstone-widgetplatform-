@@ -29,12 +29,13 @@ app.get('/health', async (req, res) => {
     }
 });
 
-// Use the routes
+// Public delivery routes MUST be registered before /api/widgets so that
+// GET /api/widgets/:key/config is NOT intercepted by widgetRoutes' requireAuth middleware.
+app.use('/', deliveryRoutes);
+
+// Authenticated routes
 app.use('/api/auth', authRoutes);
 app.use('/api/widgets', widgetRoutes);
 app.use('/api/submissions', submissionRoutes);
-
-// Publicly readable delivery routes (No requireAuth middleware)
-app.use('/', deliveryRoutes);
 
 export default app;

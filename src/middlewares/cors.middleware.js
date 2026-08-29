@@ -9,10 +9,20 @@ const DASHBOARD_URL = process.env.DASHBOARD_URL || 'http://localhost:5173';
 const corsOptionsDelegate = async (req, callback) => {
   const origin = req.header('Origin');
 
+  const defaultCorsOptions = {
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+  };
+
   // 1. If no origin is provided (e.g., Postman, curl, or standard server-side request)
   if (!origin) {
-    return callback(null, { origin: true, credentials: true });
+    return callback(null, defaultCorsOptions);
   }
+
+  // Normalize origin to remove trailing slash
+  const normalizedOrigin = origin.replace(/\/$/, '');
 
   // 2. Check if the request is for a public widget endpoint
   // Config endpoint: /api/widgets/:key/config
@@ -26,11 +36,11 @@ const corsOptionsDelegate = async (req, callback) => {
     try {
       const widget = await widgetRepository.findByApiKey(publicApiKey);
       if (widget && widget.allowed_origins) {
-        const allowedOrigins = JSON.parse(widget.allowed_origins);
+        const allowedOrigins = JSON.parse(widget.allowed_origins).map(o => o.trim().replace(/\/$/, ''));
 
-        if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        if (allowedOrigins.includes(normalizedOrigin)) {
           // Origin is whitelisted by the widget owner!
-          return callback(null, { origin: true });
+          return callback(null, { ...defaultCorsOptions, origin: true, credentials: false });
         }
       }
     } catch (err) {
@@ -42,8 +52,8 @@ const corsOptionsDelegate = async (req, callback) => {
   }
 
   // 3. For all other routes (Dashboard CRUD, Auth, etc.), only allow the dashboard URL
-  if (origin === DASHBOARD_URL) {
-    return callback(null, { origin: true, credentials: true });
+  if (normalizedOrigin === DASHBOARD_URL.replace(/\/$/, '')) {
+    return callback(null, { ...defaultCorsOptions, origin: true, credentials: true });
   }
 
   // Reject all other origins

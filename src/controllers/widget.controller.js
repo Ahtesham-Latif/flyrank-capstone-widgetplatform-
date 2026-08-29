@@ -7,9 +7,15 @@ class WidgetController {
       const { title, allowed_origins } = req.body;
       const userId = req.session.userId;
 
-      if (!title || !allowed_origins || !Array.isArray(allowed_origins)) {
+      if (!title || !allowed_origins || !Array.isArray(allowed_origins) || allowed_origins.length === 0) {
         return res.status(400).json({
-          error: 'Title and allowed_origins (array of URLs) are required'
+          error: 'Title and at least one allowed origin (array of URLs) are required'
+        });
+      }
+
+      if (allowed_origins.includes('*')) {
+        return res.status(400).json({
+          error: 'Wildcard (*) origins are not allowed for security reasons'
         });
       }
 
@@ -76,8 +82,11 @@ class WidgetController {
       const updateData = {};
       if (title) updateData.title = title;
       if (allowed_origins !== undefined) {
-        if (!Array.isArray(allowed_origins)) {
-          return res.status(400).json({ error: 'allowed_origins must be an array of URLs' });
+        if (!Array.isArray(allowed_origins) || allowed_origins.length === 0) {
+          return res.status(400).json({ error: 'allowed_origins must be a non-empty array of URLs' });
+        }
+        if (allowed_origins.includes('*')) {
+          return res.status(400).json({ error: 'Wildcard (*) origins are not allowed for security reasons' });
         }
         updateData.allowed_origins = JSON.stringify(allowed_origins);
       }

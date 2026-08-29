@@ -9,13 +9,14 @@ class UserRepository {
     return await db('users').where({ id }).first();
   }
 
-  async create(email, passwordHash) {
+  async create(email, passwordHash, name) {
     const [user] = await db('users')
       .insert({
         email,
-        password_hash: passwordHash
+        password_hash: passwordHash,
+        name
       })
-      .returning(['id', 'email', 'created_at']);
+      .returning(['id', 'email', 'name', 'created_at']);
 
     return user || (await this.findByEmail(email));
   }

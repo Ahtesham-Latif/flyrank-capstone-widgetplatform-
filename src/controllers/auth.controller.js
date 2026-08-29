@@ -4,10 +4,10 @@ import userRepository from '../repositories/user.repository.js';
 class AuthController {
   async register(req, res) {
     try {
-      const { email, password } = req.body;
+      const { email, password, name } = req.body;
 
-      if (!email || !password || password.length < 8) {
-        return res.status(400).json({ error: 'Email and password (min 6 chars) are required' });
+      if (!email || !password || password.length < 8 || !name || name.trim().length === 0) {
+        return res.status(400).json({ error: 'Name, email, and password (min 8 chars) are required' });
       }
 
       const existingUser = await userRepository.findByEmail(email);
@@ -16,7 +16,7 @@ class AuthController {
       }
 
       const passwordHash = await bcrypt.hash(password, 10); // Hash the password with a salt round of 10
-      const newUser = await userRepository.create(email, passwordHash);
+      const newUser = await userRepository.create(email, passwordHash, name.trim());
 
       req.session.userId = newUser.id; 
 
