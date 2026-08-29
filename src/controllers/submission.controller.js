@@ -29,12 +29,14 @@ class SubmissionController {
 
       // 3. Security Check: Strict Origin Validation
       const requestOrigin = req.headers.origin || req.headers.referer;
+      console.log(`[DEBUG] Attempting submission for Key: ${public_api_key} | Origin: ${requestOrigin}`); 
       let allowedOrigins = [];
       try {
         allowedOrigins = JSON.parse(widget.allowed_origins || '[]');
       } catch (e) {
         allowedOrigins = [];
       }
+      console.log("DEBUG ORIGINS:", { requestOrigin, allowedOrigins });
 
       const isWildcard = allowedOrigins.includes('*') || allowedOrigins.length === 0;
 

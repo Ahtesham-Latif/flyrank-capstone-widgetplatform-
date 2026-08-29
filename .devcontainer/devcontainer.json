@@ -1,0 +1,10 @@
+{                                                                                                    
+        "name": "FlyRank Dev Workspace",
+        "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+        "features": {
+            "ghcr.io/devcontainers/features/docker-in-docker:4": {}
+        },
+        "forwardPorts": [3000, 5173, 5432],
+        "postCreateCommand": "npm install && cd frontend && npm install",
+        "remoteUser": "node"
+} 

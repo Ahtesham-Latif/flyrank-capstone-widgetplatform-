@@ -12,6 +12,9 @@ dotenv.config();
 
 const app = express();
 
+//Proxy 
+app.set('trust proxy', 1);
+
 // Apply dynamic CORS validation
 app.use(dynamicCors);
 

@@ -44,17 +44,19 @@ export default function Auth() {
     if (!validateForm()) return;
     setLoading(true);
 
-    try {
-      let data;
-      if (mode === 'login') {
-        data = await authApi.login({ email: email.trim(), password });
-      } else {
-        data = await authApi.register({ email: email.trim(), password, name: name.trim() });
-      }
+  try {                                                                                            
+          if (mode === 'login') {                                                                        
+            await authApi.login({ email: email.trim(), password });                                      
+          } else {                                                                                       
+            await authApi.register({ email: email.trim(), password, name: name.trim() });                
+          }                                                                                              
+                                                                                                         
+      
 
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
