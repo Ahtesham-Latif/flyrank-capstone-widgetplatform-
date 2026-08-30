@@ -1,0 +1,28 @@
+version: "1.0"
+name: "signallead-widget-platform"
+language: "javascript"
+framework: "express"
+database: "postgresql"
+
+urls:
+  base_url: "http://localhost:3000"
+  dashboard_url: "http://localhost:8080"
+  script_url: "http://localhost:3000/widget.js"
+
+commands:
+  run: "docker compose up --build -d"
+  seed: "npm run migrate"
+  test: "npm test"
+
+endpoints:
+  health: "GET /health"
+  auth:
+    register: "POST /api/auth/register"
+    login: "POST /api/auth/login"
+    logout: "POST /api/auth/logout"
+  widgets:
+    crud: "/api/widgets"
+    config: "GET /api/widgets/:public_api_key/config"
+  submissions:
+    ingest: "POST /api/submissions/:public_api_key"
+    list: "GET /api/submissions"
