@@ -1,5 +1,3 @@
-version: '3.8'                                                                                       
-                                                                                                         
 services:                                                                                            
     db:                                                                                                
         image: postgres:15                                                                               
@@ -7,7 +5,8 @@ services:
         environment:                                                                                     
           POSTGRES_USER: postgres                                                                        
           POSTGRES_PASSWORD: password                                                                    
-          POSTGRES_DB: flyrank                                                                           
+          POSTGRES_DB: flyrank  
+          TZ: Asia/Karachi                                                                         
         volumes:                                                                                         
           - postgres-data:/var/lib/postgresql/data                                                       
         ports:                                                                                           
@@ -19,9 +18,12 @@ services:
           dockerfile: Dockerfile                                                                         
         restart: unless-stopped                                                                          
         ports:                                                                                           
-          - "3000:3000"                                                                                  
+          - "3000:3000"      
+        env_file:                                                                                    
+              - .env                                                                            
         environment:                                                                                     
-          - DATABASE_URL=postgres://postgres:password@db:5432/flyrank                                    
+          - DATABASE_URL=postgres://postgres:password@db:5432/flyrank   
+          - TZ=Asia/Karachi                                 
         depends_on:                                                                                      
           - db                                                                                           
                                                                                                          
@@ -31,7 +33,9 @@ services:
           dockerfile: Dockerfile                                                                         
         restart: unless-stopped                                                                          
         ports:                                                                                           
-          - "8080:80"                                                                                     
+          - "8080:80"  
+        env_file:                                                                                    
+              - ./frontend/.env                                                                                   
         depends_on:                                                                                      
           - backend                                                                                      
                                                                                                          

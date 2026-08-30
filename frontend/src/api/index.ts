@@ -42,9 +42,9 @@ const apiFetch = async (path: string, options: RequestInit = {}) => {
       },
     });
     return res;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
-      throw new Error('Request timed out. Please check your connection.');
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your connection.', { cause: error });
     }
     throw error;
   } finally {
@@ -155,8 +155,8 @@ export const systemApi = {
     // VITE_BACKEND_URL must be the Express server origin (e.g. http://localhost:3000).
     // This is separate from API_URL (which stays '' so Vite proxy handles dashboard calls).
     // When pasting the embed snippet on an external site, this absolute URL is what matters.
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-    return `${backendUrl}/widget.js`;
+   // const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+    return `${window.location.origin}/widget.js`;
   },
 };
 

@@ -10,27 +10,30 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
                                                                                                          
 const isPostgres = Boolean(process.env.DATABASE_URL);                                                
                                                                                                          
-export default {                                                                                     
-  development: {                                                                                     
-    client: isPostgres ? 'pg' : 'sqlite3',                                                           
-    connection: process.env.DATABASE_URL || {                                                        
-    filename: path.resolve(__dirname, '../../src/database/app.db')                                 
-  },                                                                                               
-  useNullAsDefault: true,                                                                          
-    pool: {                                                                                          
-      afterCreate: (conn, cb) => {                                                                   
-        if (!isPostgres) {                                                                           
-          // Enable foreign keys and WAL mode for better concurrency in SQLite                       
-          conn.run('PRAGMA foreign_keys = ON;', () => {                                              
-          conn.run('PRAGMA journal_mode = WAL;', cb);                                              
-        });                                                                                        
-      } else {                                                                                     
-          cb();                                                                                      
-        }                                                                                            
-      }                                                                                              
-    },                                                                                               
-    migrations: {                                                                                    
-       directory: path.resolve(__dirname, '../../src/migrations')                                     
-     }                                                                                                
-  }                                                                                                  
+const config = {                                                                                                                             
+      client: isPostgres ? 'pg' : 'sqlite3',                                                                                                     
+      connection: process.env.DATABASE_URL || {                                                                                                  
+        filename: path.resolve(__dirname, '../../src/database/app.db')                                                                           
+      },                                                                                                                                         
+      useNullAsDefault: true,                                                                                                                    
+      pool: {                                                                                                                                    
+        afterCreate: (conn, cb) => {                                                                                                             
+          if (!isPostgres) {                                                                                                                     
+            conn.run('PRAGMA foreign_keys = ON;', () => {                                                                                        
+              conn.run('PRAGMA journal_mode = WAL;', cb);                                                                                        
+            });                                                                                                                                  
+          } else {                                                                                                                               
+            cb();                                                                                                                                
+          }                                                                                                                                      
+        }                                                                                                                                        
+      },                                                                                                                                         
+      migrations: {                                                                                                                              
+        directory: path.resolve(__dirname, '../../src/migrations')                                                                               
+      }                                                                                                                                          
+    };                                                                                                                                           
+                                                                                                                                                 
+    // Export for BOTH environments                                                                                        
+    export default {                                                                                                                             
+      development: config,                                                                                                                       
+      production: config                                                                                                                         
 };

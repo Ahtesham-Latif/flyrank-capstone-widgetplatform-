@@ -96,6 +96,12 @@ class SubmissionController {
 
       // 7. Optional: Trigger n8n Webhook / Email Notification
       let n8nWebhookUrl = widget.webhook_url;
+      console.log("--- DEBUG WEBHOOK ---");                                                          
+          console.log("Widget URL:", n8nWebhookUrl);                                                     
+          console.log("ENV Variables:", process.env.N8N_HOST, process.env.N8N_PORT, process.env.         
+     N8N_WEBHOOK_PATH);
+
+
       if (!n8nWebhookUrl && process.env.N8N_HOST && process.env.N8N_PORT && process.env.N8N_WEBHOOK_PATH) {
         n8nWebhookUrl = `http://${process.env.N8N_HOST}:${process.env.N8N_PORT}${process.env.N8N_WEBHOOK_PATH}`;
       }
